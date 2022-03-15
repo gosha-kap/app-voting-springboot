@@ -1,4 +1,7 @@
-package com.restautantvote.entity;
+package com.restautantvote.model;
+
+import lombok.*;
+import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -6,7 +9,11 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name="meals")
-public class Meal extends AbstractBaseEntity {
+@Getter
+@Setter
+@NoArgsConstructor(access=AccessLevel.PROTECTED)
+@ToString(callSuper = true)
+public class Meal extends AbstractPersistable<Integer> {
 
     @Column(name = "description", nullable = false)
     @NotBlank
@@ -33,45 +40,12 @@ public class Meal extends AbstractBaseEntity {
     public Meal(Integer id,
                 @NotBlank @Size(min = 2, max = 120) String description,
                 @DecimalMin(value = "0.0", inclusive = false) @Digits(integer = 5, fraction = 2) BigDecimal price) {
-        super(id);
+        setId(id);
         this.description = description;
         this.price = price;
     }
 
-    public Meal() {
-    }
 
 
-    public String getDescription() {
-        return description;
-    }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public Menu getMenu() {
-        return menu;
-    }
-
-    public void setMenu(Menu menu) {
-        this.menu = menu;
-    }
-
-    @Override
-    public String toString() {
-        return "Meal{" +
-                "description='" + description + '\'' +
-                ", price=" + price +
-                ", menu=" + menu +
-                '}';
-    }
 }
