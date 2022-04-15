@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
@@ -13,7 +14,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
 @ToString(callSuper = true)
-public class Meal extends AbstractPersistable<Integer> {
+public class Meal extends BaseEntity implements Serializable {
 
     @Column(name = "description", nullable = false)
     @NotBlank
@@ -25,10 +26,6 @@ public class Meal extends AbstractPersistable<Integer> {
     @Digits(integer=5, fraction=2)
     private BigDecimal price;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="menu_id", nullable=false)
-    @NotNull
-    private Menu menu;
 
 
     public Meal(@NotBlank @Size(min = 2, max = 120) String description,
@@ -40,12 +37,10 @@ public class Meal extends AbstractPersistable<Integer> {
     public Meal(Integer id,
                 @NotBlank @Size(min = 2, max = 120) String description,
                 @DecimalMin(value = "0.0", inclusive = false) @Digits(integer = 5, fraction = 2) BigDecimal price) {
-        setId(id);
+        this.id = id;
         this.description = description;
         this.price = price;
     }
-
-
 
 
 }

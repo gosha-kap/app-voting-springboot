@@ -1,6 +1,13 @@
 package com.restautantvote.model;
 
-public enum Role {
-    ROLE_ADMIN,
-    ROLE_USER
- }
+import org.springframework.security.core.GrantedAuthority;
+
+public enum Role implements GrantedAuthority {
+    ADMIN,
+    USER;
+
+    @Override
+    public String getAuthority() {
+        return "ROLE_" + name();
+    }
+}

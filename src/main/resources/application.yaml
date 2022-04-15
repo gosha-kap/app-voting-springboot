@@ -1,5 +1,12 @@
 #  https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+
+time-border:
+        hour: 11
+        minute : 0
+
 spring:
+  main:
+    allow-circular-references : true
   jpa:
     show-sql: true
     open-in-view: false

@@ -1,13 +1,15 @@
 package com.restautantvote.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
+import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
+
 
 @Getter
 @Setter
@@ -15,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
 @Entity
 @Table(name="restaurants")
-public class Restaurant extends AbstractPersistable<Integer> {
+public class Restaurant extends BaseEntity implements Serializable {
 
     @Column(name = "name", nullable = false)
     @NotBlank
@@ -23,17 +25,18 @@ public class Restaurant extends AbstractPersistable<Integer> {
     private String name;
 
 
-    @Column(name = "rating")
-    @OneToMany(fetch = FetchType.LAZY)
-    private Set<Vote> countVote;
-
-
     @Column(name = "menus")
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "restaurant",cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Menu> menu;
 
+
     public Restaurant(Integer id, String name) {
-        setId(id);
+        this.id = id;
         this.name = name;
+    }
+
+    public Restaurant(String name) {
+        new Restaurant(null,name);
     }
 }
