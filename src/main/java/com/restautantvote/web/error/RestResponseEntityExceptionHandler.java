@@ -24,7 +24,7 @@ import java.util.List;
 @RestControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({IllegalArgumentException.class,IllegalStateException.class})
+    @ExceptionHandler({RuntimeException.class})
     public ResponseEntity<Object> appException(RuntimeException  ex, WebRequest request) {
         String error = ex.toString();
         ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Application error", error);

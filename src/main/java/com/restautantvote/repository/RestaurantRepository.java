@@ -19,22 +19,16 @@ public interface RestaurantRepository extends JpaRepository<Restaurant,Integer> 
         List<Restaurant> getAllForDate(LocalDate date);
 
 
-    @Query("SELECT restaurants from Restaurant restaurants " +
-            " Join fetch restaurants.menu menus  where menus.created = " +
-            "( select MAX(menu.created)  from Menu menu where menus.id = menu.id)" )
-        List<Restaurant> getAll();
+    @Query("SELECT restaurant from Restaurant restaurant " +
+            " Join fetch restaurant.menu menus  where menus.created = " +
+            "(select MAX(menu.created)  from Menu menu where menu.restaurant.id = restaurant.id )" )
+        List<Restaurant> getAllWithMaxDate();
 
     @Query("SELECT restaurant from Restaurant restaurant"+
             "  JOIN FETCH  restaurant.menu menus " +
             "where restaurant.id =:id and menus.created=:date"  )
     Optional<Restaurant> getOneInfo(Integer id,LocalDate date);
 
-
-    @Query("SELECT restaurant from Restaurant restaurant " +
-            " Join fetch restaurant.menu menus  where menus.created = " +
-            "( select MAX(menu.created)  from Menu menu where menus.id = menu.id) and " +
-            "restaurant.id = :restaurantId" )
-    Optional<Restaurant> getLastMenu(Integer restaurantId);
 
     @Query("SELECT restaurant from Restaurant  restaurant " +
             "Join fetch restaurant.menu menu  " +

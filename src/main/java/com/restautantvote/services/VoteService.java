@@ -11,6 +11,7 @@ import com.restautantvote.repository.VoteRepository;
 
 import com.restautantvote.utils.Util;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +47,7 @@ public class VoteService {
     @Value("${time-border.minute}")
     private  Integer MINUTE;
 
+    @Cacheable(value = "restaurantsTodayInfo")
     public List<RestaurantMenuInfo> getAllForDate(LocalDate date)    {
          List<Restaurant>   updatedRestaurants = restaurantRepository.getAllForDate(date);
          List<Vote> votes = voteRepository.getAllForDay(date);
@@ -55,6 +57,7 @@ public class VoteService {
 
     }
 
+    @Cacheable(value = "restaurantTodayInfo")
     public RestaurantMenuInfo getOneInfo(Integer restaurantId,LocalDate date) {
         List<Vote> votes = voteRepository.getVotesForOne(restaurantId);
         Restaurant restaurant = restaurantRepository.getOneInfo(restaurantId,date).
@@ -63,6 +66,7 @@ public class VoteService {
     }
 
 
+    @Cacheable(value = "restaurantHistoryInfo")
     public  List<RestaurantMenuInfo>getMenuHistory(Integer restaurantId) {
         Restaurant   restaurant = restaurantRepository.getMenuHistory(restaurantId).
                 orElseThrow(()-> new IllegalArgumentException("No entity with id = " + restaurantId + " is found."));

@@ -14,18 +14,21 @@ VALUES ( 'suchi bar' ),
 
 INSERT INTO MENUS (DATE, RESTAURANT_ID)
 VALUES (NOW(),1),
-       (NOW(),2),
-       (current_date-1,2);
+       (current_date-1,2),
+       (current_date-2,2),
+       (NOW(),3);
+
 
 
 INSERT INTO MEALS (DESCRIPTION, PRICE)
 VALUES ('zavtrak',10.45 ),
        ('obed',20.00),
-       ('yzin',30.67),
 
- ('zavtrak2',11.45 ),
- ('obed2',21.00),
- ('yzin2',31.67);
+       ('yzin',30.67),
+       ('zavtrak2',11.45 ),
+
+        ('obed2',21.00),
+        ('yzin2',31.67);
 
 INSERT INTO MENUS_MEALS (MENU_ID, MEALS_ID) VALUES ( 1,1 ),(1,2),(2,3),(2,4),(3,5),(3,6);
 

@@ -9,9 +9,6 @@ import java.util.Optional;
 
 public interface MenuRepository extends JpaRepository<Menu,Integer>
 {
-        @Query("Select menu from Menu menu where menu.restaurant.id =:restaurantId " +
-                "order by menu.created desc")
-        List<Menu> getMenuHistory(Integer restaurantId);
 
 
 }

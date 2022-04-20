@@ -13,6 +13,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -73,8 +75,12 @@ public class User extends BaseEntity implements Serializable {
     }
 
     public User(String login, String firstName, String lastName, String password, Set<Role> roles) {
-        new User(null,login,firstName,lastName,password,roles);
-
-
+       this(null,login,firstName,lastName,password,roles);
     }
+
+    public User(String login, String firstName, String lastName, String password) {
+      this(null,login,firstName,lastName,password, Collections.singleton(Role.USER));
+    }
+
+
 }

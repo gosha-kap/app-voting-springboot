@@ -27,9 +27,10 @@ public class RestaurantMenuInfo implements  Comparable<RestaurantMenuInfo>{
         this.mealList = mealList;
     }
 
-    public RestaurantMenuInfo(Integer id, String name, List<Meal> mealList) {
+    public RestaurantMenuInfo(Integer id, String name,LocalDate date,  List<Meal> mealList) {
         this.id = id;
         this.name = name;
+        this.date = date;
         this.mealList = mealList;
     }
 

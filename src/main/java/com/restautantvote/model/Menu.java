@@ -48,8 +48,6 @@ public class Menu extends AbstractPersistable<Integer> {
     }
 
     public void addMealsToMenu(List<Meal> meals ){
-        if(Objects.isNull(this.getMeals()))
-            setMeals(new ArrayList<>());
         this.getMeals().addAll(meals);
     }
 

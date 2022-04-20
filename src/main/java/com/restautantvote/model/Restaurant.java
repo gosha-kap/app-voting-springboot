@@ -19,7 +19,7 @@ import java.util.List;
 @Table(name="restaurants")
 public class Restaurant extends BaseEntity implements Serializable {
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false,unique = true)
     @NotBlank
     @Size(min = 2, max = 120)
     private String name;
@@ -39,4 +39,7 @@ public class Restaurant extends BaseEntity implements Serializable {
     public Restaurant(String name) {
         new Restaurant(null,name);
     }
+
+
+
 }
