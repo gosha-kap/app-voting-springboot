@@ -8,6 +8,9 @@ import com.restautantvote.model.User;
 import com.restautantvote.model.Vote;
 import com.restautantvote.services.VoteService;
 import com.restautantvote.utils.ValidationUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.hateoas.CollectionModel;
@@ -32,13 +35,15 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @AllArgsConstructor
 @Slf4j
 @RequestMapping(value = "/api/profile")
+@Tag(name = "Profile controller.", description = "Register user. Get user information and update it. Show user vote history (Authorize required).")
 public class UserController {
 
     private final VoteService voteService;
     private final  Class<UserRestaurantController> UserRestaurantController = UserRestaurantController.class;
     private final  Class<UserController> UserController = UserController.class;
 
-
+    @Operation(
+            summary = "Register user.")
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntityModel<User>> register(@Valid @RequestBody User user){
         log.info("register {}", user);
@@ -53,8 +58,11 @@ public class UserController {
         return ResponseEntity.created(uriOfNewResource).body(userEntityModel);
     }
 
+    @Operation(
+            summary = "Get user information.")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EntityModel<User>> getUserProfile(@AuthenticationPrincipal AuthUser authUser){
+    public ResponseEntity<EntityModel<User>> getUserProfile(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser){
         log.info("get {}", authUser);
         EntityModel<User> userEntityModel = EntityModel.of(authUser.getUser(),
                 linkTo(methodOn(UserController).getUserProfile(null)).withSelfRel(),
@@ -63,8 +71,12 @@ public class UserController {
         return ResponseEntity.ok(userEntityModel);
     }
 
+    @Operation(
+            summary = "Update user information.")
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EntityModel<User>> updateUser(@AuthenticationPrincipal AuthUser authUser,@Valid @RequestBody User user){
+    public ResponseEntity<EntityModel<User>> updateUser(
+            @Parameter(hidden = true)  @AuthenticationPrincipal AuthUser authUser,
+            @Valid @RequestBody User user){
         log.info("update {} ", user);
         User oldUser = authUser.getUser();
         ValidationUtil.assureIdConsistent(user, oldUser.id());
@@ -78,9 +90,11 @@ public class UserController {
            return ResponseEntity.ok(userEntityModel);
     }
 
-    /*Get vote history for user*/
+    @Operation(
+            summary = "User voting information.")
     @GetMapping(value ="/history",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CollectionModel<EntityModel<Vote>>> getUserVotes(@AuthenticationPrincipal AuthUser authUser){
+    public ResponseEntity<CollectionModel<EntityModel<Vote>>> getUserVotes(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser){
         log.info("get votes for  {}", authUser);
         List<Vote> votes = voteService.getUserVotes(authUser.id());
         List<EntityModel<Vote>> votesEntityList = votes.stream()
@@ -88,7 +102,6 @@ public class UserController {
                         EntityModel.of(vote,linkTo(methodOn(UserRestaurantController).
                                 oneRestaurantMenuForDate(vote.getRestaurant().getId(),vote.getDate())).withSelfRel()))
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(
                 CollectionModel.of(votesEntityList,
                         linkTo(methodOn(UserController).getUserProfile(null)).withSelfRel(),

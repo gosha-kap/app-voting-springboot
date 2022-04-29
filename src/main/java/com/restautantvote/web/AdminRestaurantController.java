@@ -5,6 +5,9 @@ import com.restautantvote.dto.RestaurantIsUpdatedInfo;
 import com.restautantvote.model.Restaurant;
 import com.restautantvote.services.AdminService;
 import com.restautantvote.utils.ValidationUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.hateoas.CollectionModel;
@@ -29,12 +32,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @AllArgsConstructor
 @RequestMapping(value = "/api/admin/restaurants")
 @Slf4j
+@Tag(name = "Restaurant controller.", description = "Create and edit restaurant information. (Required admin role).")
 public class AdminRestaurantController {
 
     private final AdminService adminService;
     private final  Class<UserRestaurantController> userRestaurantController = UserRestaurantController.class;
     private final Class<AdminRestaurantController> adminRestaurantControllerClass  = AdminRestaurantController.class;
 
+    @Operation(
+            summary = "Show restaurants.",
+            description = "Display if  restaurant is updated or not.")
     @GetMapping
     public ResponseEntity<CollectionModel<EntityModel<RestaurantIsUpdatedInfo>>>  getAllToday()  {
         log.info("Get information about ubdated status by admin");
@@ -50,6 +57,8 @@ public class AdminRestaurantController {
                        linkTo(methodOn(userRestaurantController).allRestaurantsMenuForToday()).withRel("root")));
                 }
 
+    @Operation(
+            summary = "Restaurant information.")
     @GetMapping(value = "/{restaurantId}",produces = MediaType.APPLICATION_JSON_VALUE)
     public  ResponseEntity<EntityModel<Restaurant>> getOne(@PathVariable @Min(1) Integer restaurantId) {
         log.info("get info about restaurant with id  {} by admin",restaurantId );
@@ -59,6 +68,8 @@ public class AdminRestaurantController {
         return ResponseEntity.ok(restaurantEntityModel);
     }
 
+    @Operation(
+            summary = "Create restaurant.")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntityModel<Restaurant>> createOne(@Valid @RequestBody Restaurant restaurant)  {
         log.info("Create restaurant  by admin");
@@ -73,6 +84,8 @@ public class AdminRestaurantController {
 
     }
 
+    @Operation(
+            summary = "Update restaurant.")
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntityModel<Restaurant>>  updateOne(@Valid @RequestBody Restaurant restaurant){
         ValidationUtil.checkNotNew(restaurant);
@@ -83,8 +96,11 @@ public class AdminRestaurantController {
         return ResponseEntity.ok(restaurantEntityModel);
      }
 
+    @Operation(
+            summary = "Delete restaurant and all linked information.")
     @DeleteMapping( "/{restaurantId}")
-    public ResponseEntity<?>  deleteOne(@PathVariable @Min(1) Integer restaurantId){
+    public ResponseEntity<?>  deleteOne(
+            @Parameter(description = "Identifier of restaurant") @PathVariable @Min(1) Integer restaurantId){
         log.info("delete restaurant with id  {} by admin",restaurantId);
         adminService.delete(restaurantId);
         return ResponseEntity.noContent().build();

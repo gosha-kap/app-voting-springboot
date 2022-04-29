@@ -2,6 +2,7 @@ package com.restautantvote.services;
 
 import com.restautantvote.dto.RestaurantIsUpdatedInfo;
 import com.restautantvote.dto.RestaurantMenuInfo;
+import com.restautantvote.model.BaseEntity;
 import com.restautantvote.model.Meal;
 import com.restautantvote.model.Menu;
 import com.restautantvote.model.Restaurant;
@@ -12,6 +13,8 @@ import com.restautantvote.repository.VoteRepository;
 import com.restautantvote.utils.ValidationUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +36,6 @@ public class AdminService {
 
     public List<RestaurantIsUpdatedInfo> getAllUpdated() {
         List<Restaurant> restaurantList = restaurantRepository.getAllWithMaxDate();
-        System.out.println("");
         return restaurantList.stream().map(restaurant -> new RestaurantIsUpdatedInfo(
                         restaurant.getId(),
                         restaurant.getName(),
@@ -44,15 +46,14 @@ public class AdminService {
     }
 
      public Restaurant getOne(Integer restaurantId) {
-         Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(
+         return restaurantRepository.findById(restaurantId).orElseThrow(
                  ()-> new IllegalArgumentException("No entity with restaurantId = " + restaurantId + "is found."));
-         return restaurant;
     }
 
 
     @Modifying
     @Transactional
-    @CacheEvict(value = "restaurantsTodayInfo", allEntries = true)
+    @CacheEvict(value = "allRestaurantsDateInfo" , keyGenerator = "DateKeyGenerator")
     public Restaurant save(Restaurant restaurant) {
         ValidationUtil.checkNew(restaurant);
         Restaurant created = restaurantRepository.save(restaurant);
@@ -62,10 +63,14 @@ public class AdminService {
         return created;
     }
 
+
     @Modifying
     @Transactional
-    @CacheEvict(value = {"restaurantsTodayInfo","restaurantTodayInfo","restaurantHistoryInfo"}, allEntries = true)
-    public Restaurant updateRestaurant(Restaurant updatedRestaurant) {
+    @Caching(evict= {
+            @CacheEvict(value = "restaurantDateInfo", key = "#updatedRestaurant.id"),
+            @CacheEvict(value = "restaurantHistoryInfo", key = "#updatedRestaurant.id"),
+            @CacheEvict(value = "allRestaurantsDateInfo", allEntries = true)})
+     public Restaurant updateRestaurant(Restaurant updatedRestaurant) {
         restaurantRepository.findById(updatedRestaurant.getId()).orElseThrow(
                 ()-> new IllegalArgumentException("No entity with restaurantId = " + updatedRestaurant.getId() + "is found."));
         return restaurantRepository.save(updatedRestaurant);
@@ -73,13 +78,17 @@ public class AdminService {
 
     @Modifying
     @Transactional
-    @CacheEvict(value = {"restaurantsTodayInfo","restaurantTodayInfo","restaurantHistoryInfo"}, allEntries = true)
+    @Caching(evict= {
+            @CacheEvict(value = "restaurantDateInfo", key = "#restaurantId"),
+            @CacheEvict(value = "restaurantHistoryInfo", key = "#restaurantId"),
+            @CacheEvict(value = "allRestaurantsDateInfo", allEntries = true)})
     public void delete(Integer restaurantId) {
              restaurantRepository.findById(restaurantId).orElseThrow(
                 ()-> new IllegalArgumentException("No entity with restaurantId = " + restaurantId + "is found."));
              voteRepository.deleteByRestaurantId(restaurantId);
              restaurantRepository.deleteById(restaurantId);
     }
+
 
     public RestaurantMenuInfo getOneInfo(Integer restaurantId) {
         Restaurant restaurant = restaurantRepository.getOneInfo(restaurantId,LocalDate.now()).orElseThrow(
@@ -92,7 +101,10 @@ public class AdminService {
 
     @Modifying
     @Transactional
-    @CacheEvict(value = "restaurantsTodayInfo", allEntries = true)
+    @Caching(evict= {
+            @CacheEvict(value = "restaurantDateInfo", key = "#restaurantId"),
+            @CacheEvict(value = "restaurantHistoryInfo", key = "#restaurantId"),
+            @CacheEvict(value = "allRestaurantsDateInfo",keyGenerator = "DateKeyGenerator")})
     public RestaurantMenuInfo addMealToMenu(Integer restaurantId, List<Meal> meals) {
         ValidationUtil.checkIfEmpty(meals);
         meals.forEach(ValidationUtil::checkNew);
@@ -109,7 +121,10 @@ public class AdminService {
 
     @Modifying
     @Transactional
-    @CacheEvict(value = "restaurantsTodayInfo", allEntries = true)
+    @Caching(evict= {
+            @CacheEvict(value = "restaurantDateInfo", key = "#restaurantId"),
+            @CacheEvict(value = "restaurantHistoryInfo", key = "#restaurantId"),
+            @CacheEvict(value = "allRestaurantsDateInfo",keyGenerator = "DateKeyGenerator")})
     public RestaurantMenuInfo updateMeals(Integer restaurantId, List<Meal> meals) {
         ValidationUtil.checkIfEmpty(meals);
         meals.forEach(ValidationUtil::checkNotNew);
@@ -120,7 +135,8 @@ public class AdminService {
                 ()-> new RuntimeException("Error retrieving menu ..."));
         menu.getMeals().forEach(meal ->
             meals.forEach(updatedMeal-> {
-                if(updatedMeal.getId().equals(meal.getId())) {
+                assert updatedMeal.getId() != null;
+                if(Objects.equals(updatedMeal.getId(), meal.getId())) {
                     meal.setDescription(updatedMeal.getDescription());
                     meal.setPrice(updatedMeal.getPrice());
             }
@@ -132,7 +148,10 @@ public class AdminService {
 
     @Modifying
     @Transactional
-    @CacheEvict(value = "restaurantsTodayInfo", allEntries = true)
+    @Caching(evict= {
+            @CacheEvict(value = "restaurantDateInfo", key = "#restaurantId"),
+            @CacheEvict(value = "restaurantHistoryInfo", key = "#restaurantId"),
+            @CacheEvict(value = "allRestaurantsDateInfo",keyGenerator = "DateKeyGenerator")})
     public void deleteMeals(Integer restaurantId, List<Integer> deleteListId) {
         ValidationUtil.checkIfEmpty(deleteListId);
         Restaurant restaurant = restaurantRepository.getOneInfo(restaurantId,LocalDate.now()).orElseThrow(
@@ -140,7 +159,7 @@ public class AdminService {
                         "or no menu for today"));
         Menu menu = restaurant.getMenu().stream().findFirst().orElseThrow(
                 ()-> new RuntimeException("Error retrieving menu ..."));
-        List<Integer> existedListId = menu.getMeals().stream().mapToInt(meal -> meal.getId()).boxed().toList();
+        List<Integer> existedListId = menu.getMeals().stream().mapToInt(BaseEntity::getId).boxed().toList();
         if(!existedListId.containsAll(deleteListId))
             throw new IllegalArgumentException("Can't found meals to delete. Wrong id list");
         List<Meal> updatedMealList =  menu.getMeals().stream().

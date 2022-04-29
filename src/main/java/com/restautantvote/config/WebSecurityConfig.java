@@ -2,7 +2,6 @@ package com.restautantvote.config;
 
 import com.restautantvote.model.AuthUser;
 import com.restautantvote.model.Role;
-import com.restautantvote.model.User;
 import com.restautantvote.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,21 +1,28 @@
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns="http://www.ehcache.org/v3"
-        xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
-        xsi:schemaLocation="
-            http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd
-            http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
+<ehcache:config
+        xmlns:ehcache="http://www.ehcache.org/v3"
+        xmlns:jcache="http://www.ehcache.org/v3/jsr107">
 
 
-    <cache-template name="expiryCache">
-        <expiry>
-            <ttl unit="hours">24</ttl>
-        </expiry>
-        <heap unit="entries">5000</heap>
-    </cache-template>
+    <ehcache:cache-template name="expiryCache">
+        <ehcache:expiry>
+            <ehcache:ttl unit="minutes">5</ehcache:ttl>
+        </ehcache:expiry>
+        <ehcache:heap >5000</ehcache:heap>
+    </ehcache:cache-template>
+
+    <ehcache:cache-template name="singleNonExpiryCache">
+        <ehcache:expiry>
+            <ehcache:none/>
+        </ehcache:expiry>
+        <ehcache:heap>100</ehcache:heap>
+    </ehcache:cache-template>
 
 
-    <cache alias="restaurantsTodayInfo" uses-template="expiryCache"/>
-    <cache alias="restaurantTodayInfo" uses-template="expiryCache"/>
-    <cache alias="restaurantHistoryInfo" uses-template="expiryCache"/>
+    <ehcache:cache alias="allRestaurantsDateInfo" uses-template="expiryCache"/>
+    <ehcache:cache alias="restaurantHistoryInfo" uses-template="expiryCache"/>
+    <ehcache:cache alias="restaurantDateInfo" uses-template="expiryCache"/>
 
-</config>
+
+   <!-- <ehcache:cache alias="users" uses-template="singleNonExpiryCache" />-->
+
+</ehcache:config>

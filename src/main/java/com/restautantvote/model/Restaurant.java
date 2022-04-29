@@ -2,8 +2,7 @@ package com.restautantvote.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.springframework.boot.context.properties.bind.DefaultValue;
-import org.springframework.data.jpa.domain.AbstractPersistable;
+
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -20,7 +19,7 @@ import java.util.List;
 public class Restaurant extends BaseEntity implements Serializable {
 
     @Column(name = "name", nullable = false,unique = true)
-    @NotBlank
+    @NotBlank(message = "Name is required")
     @Size(min = 2, max = 120)
     private String name;
 
@@ -37,7 +36,7 @@ public class Restaurant extends BaseEntity implements Serializable {
     }
 
     public Restaurant(String name) {
-        new Restaurant(null,name);
+        this(null,name);
     }
 
 

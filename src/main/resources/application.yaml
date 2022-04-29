@@ -11,16 +11,23 @@ spring:
     show-sql: true
     open-in-view: false
     defer-datasource-initialization: true
-    hibernate:
-      ddl-auto: create-drop
     properties:
-      #  http://docs.jboss.org/hibernate/orm/5.3/userguide/html_single/Hibernate_User_Guide.html#configurations
+      javax:
+        persistence:
+          sharedCache:
+            mode: ALL
       hibernate:
+        ddl-auto: create-drop
         format_sql: true
         default_batch_fetch_size: 20
-        # https://stackoverflow.com/questions/21257819/what-is-the-difference-between-hibernate-jdbc-fetch-size-and-hibernate-jdbc-batc
         jdbc.batch_size: 20
         id.new_generator_mappings: false
+        cache:
+          queries: false
+          use_second_level_cache: true
+          use_query_cache: false
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
   datasource:
     # ImMemory
          url: jdbc:h2:mem:app
@@ -33,3 +40,5 @@ spring:
         config: classpath:ehcache.xml
 
   h2.console.enabled: true
+
+

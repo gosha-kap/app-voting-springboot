@@ -11,7 +11,9 @@ import com.restautantvote.repository.VoteRepository;
 
 import com.restautantvote.utils.Util;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,33 +33,26 @@ public class VoteService {
     private final RestaurantRepository restaurantRepository;
     private final VoteRepository voteRepository;
     private final UserRepository userRepository;
-    private final MenuRepository menuRepository;
+
 
     public VoteService(RestaurantRepository restaurantRepository, VoteRepository voteRepository, UserRepository userRepository, MenuRepository menuRepository) {
         this.restaurantRepository = restaurantRepository;
         this.voteRepository = voteRepository;
         this.userRepository = userRepository;
-        this.menuRepository = menuRepository;
+
 
     }
 
-    @Value("${time-border.hour}")
-    private  Integer HOUR;
 
-    @Value("${time-border.minute}")
-    private  Integer MINUTE;
-
-    @Cacheable(value = "restaurantsTodayInfo")
+    @Cacheable(value = "allRestaurantsDateInfo", key="#date")
     public List<RestaurantMenuInfo> getAllForDate(LocalDate date)    {
          List<Restaurant>   updatedRestaurants = restaurantRepository.getAllForDate(date);
          List<Vote> votes = voteRepository.getAllForDay(date);
-         List<RestaurantMenuInfo> result =  updatedRestaurants.stream().
-                 map(restaurant -> Util.toMenuFromRestaurantList(restaurant,votes,date)).sorted().collect(Collectors.toList());
-        return result;
-
+         return updatedRestaurants.stream().
+                map(restaurant -> Util.toMenuFromRestaurantList(restaurant,votes,date)).sorted().collect(Collectors.toList());
     }
 
-    @Cacheable(value = "restaurantTodayInfo")
+    @Cacheable(value = "restaurantDateInfo" , key = "#restaurantId")
     public RestaurantMenuInfo getOneInfo(Integer restaurantId,LocalDate date) {
         List<Vote> votes = voteRepository.getVotesForOne(restaurantId);
         Restaurant restaurant = restaurantRepository.getOneInfo(restaurantId,date).
@@ -66,7 +61,7 @@ public class VoteService {
     }
 
 
-    @Cacheable(value = "restaurantHistoryInfo")
+    @Cacheable(value = "restaurantHistoryInfo",key = "#restaurantId")
     public  List<RestaurantMenuInfo>getMenuHistory(Integer restaurantId) {
         Restaurant   restaurant = restaurantRepository.getMenuHistory(restaurantId).
                 orElseThrow(()-> new IllegalArgumentException("No entity with id = " + restaurantId + " is found."));
@@ -77,20 +72,16 @@ public class VoteService {
 
     @Modifying
     @Transactional
+    @CacheEvict(value = "allRestaurantsDateInfo" , keyGenerator = "DateKeyGenerator")
     public RestaurantMenuInfo voteFor(Integer restaurantId, Vote vote) {
-        LocalTime BORDER_TIME = LocalTime.of(HOUR,MINUTE);
-        if(LocalTime.now().isBefore(BORDER_TIME)){
            Restaurant restaurant = restaurantRepository.getOneInfo(restaurantId,LocalDate.now()).orElseThrow(
-                   ()-> new IllegalArgumentException("No entity with id = " + restaurantId + " is found."));
+                   ()-> new IllegalArgumentException("No entity with id = " + restaurantId + " is found or menu is not ready for today"));
            vote.setRestaurant(restaurant);
            vote.setDate(LocalDate.now());
            Optional<Vote> oldVote = voteRepository.getByUserId(vote.getUser().id());
            oldVote.ifPresent(value -> vote.setId(value.getId()));
            voteRepository.save(vote);
            return this.getOneInfo(restaurantId,LocalDate.now());
-        }
-        else
-            throw new IllegalStateException("You can't voted after "+BORDER_TIME.toString());
     }
 
 

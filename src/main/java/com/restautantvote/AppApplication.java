@@ -8,17 +8,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@AllArgsConstructor
-
 public class AppApplication implements ApplicationRunner {
 
-    final private RestaurantRepository restaurantRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(AppApplication.class, args);
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args)  {
             }
 }

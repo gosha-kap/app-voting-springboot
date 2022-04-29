@@ -1,8 +1,9 @@
 package com.restautantvote.web;
 
 
+import com.restautantvote.AbstractControllerTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -15,9 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = { "time-border.hour=23",
-                                "time-border.minute=59" })
-class UserRestaurantControllerTest extends AbstractControllerTest {
+class UserRestaurantControllerTest extends AbstractWebController {
     static final String URL = "/api/restaurants";
 
     @Test
@@ -30,22 +29,22 @@ class UserRestaurantControllerTest extends AbstractControllerTest {
 
 
     @Test()
-    void allRestaurantInfoForDate_WithWrongTypeParametr() throws Exception {
+    void allRestaurantInfoForDate_WithWrongParametr() throws Exception {
         String badDataParametr = "blablabla";
 
         perform(MockMvcRequestBuilders.get(URL+"/date/{badDataParametr}", badDataParametr))
                 .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentTypeMismatchException));
+                .andExpect(result -> Assertions.assertTrue(result.getResolvedException() instanceof MethodArgumentTypeMismatchException));
 
     }
 
 
     @Test
-    void oneRestaurantInfoForToday_withValidationError() throws  Exception{
+    void oneRestaurantInfoForToday_withWrongID() throws  Exception{
         String restaurantId = "-67";
          perform(MockMvcRequestBuilders.get(URL+"/{restaurantId}", restaurantId))
                 .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
+                .andExpect(result -> Assertions.assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
 
     }
 
@@ -56,9 +55,9 @@ class UserRestaurantControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithUserDetails(value = "user")
+    @WithUserDetails
     void makeVoteSuccess() throws Exception {
-          perform(MockMvcRequestBuilders.get(URL+"/2/vote/7"))
+          perform(MockMvcRequestBuilders.get(URL+"/1/vote/7"))
                 .andExpect(status().isOk());
     }
 
