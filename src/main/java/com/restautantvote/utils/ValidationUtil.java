@@ -17,12 +17,6 @@ public class ValidationUtil {
 
 
 
-    public static void checkNotFound(boolean found, String msg) {
-        if (!found) {
-            throw new IllegalArgumentException("Not found entity with " + msg);
-        }
-    }
-
     public static void checkNew(BaseEntity entity) {
         if (!entity.isNew()) {
             throw new IllegalArgumentException(entity.getClass().getSimpleName() + " must be new (id=null)");
